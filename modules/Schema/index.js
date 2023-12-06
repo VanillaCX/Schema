@@ -11,6 +11,7 @@ const {EventLogger} = require("../EventLogger");
 const {Squid} = require("../Squid");
 const {NameSpace} = require("../NameSpace");
 const {PhoneNumber} = require("../PhoneNumber");
+const {SchemaError} = require("../SchemaError");
 
 const DataTypes = {
     Identifier,
@@ -198,4 +199,4 @@ class Schema {
 }
 
 
-module.exports = { Schema, DataTypes }
+module.exports = { Schema, DataTypes, SchemaError }
