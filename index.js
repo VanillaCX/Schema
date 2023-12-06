@@ -1,3 +1,3 @@
-const {DefaultModule} = require("./modules/default");
+const {Schema, DataTypes} = require("./modules/Schema");
 
-module.exports = {DefaultModule}
+module.exports = {Schema, ...DataTypes}
