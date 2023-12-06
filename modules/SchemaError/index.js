@@ -4,3 +4,5 @@ class SchemaError extends Error {
         this.errors = errors;
     }
 }
+
+module.exports = {SchemaError}
