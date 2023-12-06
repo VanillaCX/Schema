@@ -1,4 +1,5 @@
 const {DataType} = require("../DataType");
+const crypto = require("node:crypto");
 
 class Squid {
     static name = "Squid";
