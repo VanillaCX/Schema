@@ -30,7 +30,7 @@ const DataTypes = {
 class Schema {
     definition;
 
-    constructor(definition){
+    constructor(definition = {}){
         this.definition = definition;
     }
 
