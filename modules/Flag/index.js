@@ -1,7 +1,7 @@
 const {DataType} = require("../DataType");
 
 class Flag extends DataType{
-    static name = "Email";
+    static name = "Flag";
     constructor(){}
     
     static test(value){

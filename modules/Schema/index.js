@@ -158,6 +158,10 @@ class Schema {
         return JSON.stringify(this.serialised)
     }
 
+    get pretty(){
+        return JSON.stringify(this.serialised, null, 4)
+    }
+
     get serialised(){
         return Schema.serialise(this.definition);
     }
