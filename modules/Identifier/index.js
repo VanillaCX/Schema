@@ -1,5 +1,5 @@
 const {DataType} = require("../DataType");
-const {crypto} = require("node:crypto");
+const crypto = require("node:crypto");
 
 class Identifier extends DataType {
     static name = "Identifier";
