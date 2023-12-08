@@ -1,4 +1,5 @@
 const {DataType} = require("../DataType");
+const {crypto} = require("node/crypto");
 
 class Identifier extends DataType {
     static name = "Identifier";
@@ -7,7 +8,19 @@ class Identifier extends DataType {
     static #minLength = 3;
     static #maxLength = 100;
     static #reservedWords = ["matter", "edition", "slot", "model", "editor", "user", "cx"];
-    static #syntax = /^([a-z][a-z0-9_]+[a-z])$/;
+    static #syntax = /^([a-z][a-z0-9_-]+[a-z])$/;
+
+    static generate = (prefix) => {
+        let random = crypto.randomUUID();
+    
+        random = random.replace(/-/g, "")
+        
+        if(typeof prefix === "string" && prefix.length > 0){
+            random = `${prefix}-${random}`
+        }
+    
+        return random;
+    }
 
     static test(value){
         const errors = [];
