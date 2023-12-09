@@ -29,6 +29,10 @@ const DataTypes = {
     Flag
 }
 
+const isSchema = (value) => {
+     return value.name === "Schema"
+}
+
 const isObject = (value) => {
     return typeof value === 'object' && value !== null && value.constructor === Object
 }
@@ -38,7 +42,7 @@ const isRule = (value) => {
     
 }
 
-const isSchema = (value) => {
+const isJsonObject = (value) => {
     return isObject(value) && !isRule(value)
 }
 
@@ -47,6 +51,7 @@ const isArray = (value) => {
 }
 
 class Schema {
+    name = "Schema"
     definition;
     constructor(definition){
         this.definition = definition;
@@ -96,13 +101,15 @@ class Schema {
         let childResult;
         let fieldResult;
 
+        
+
+        
         if(isArray(definition)){
             // DEFINITION IS AN ARRAY
             sanitised = [];
             const childDefinition = definition[0];
 
             doc.forEach((childDoc, index) => {
-                console.log(childDoc);
                 childResult = this.#traverse({doc: childDoc, definition: childDefinition, partialDoc});
                 if(childResult.valid){
                     sanitised.push(childResult.sanitised);
@@ -124,6 +131,14 @@ class Schema {
                     }
 
                 } else if(isSchema(value)){
+                    childResult = this.#traverse({doc: doc[key], definition:value.definition, partialDoc});
+                    if(childResult.valid){
+                        sanitised[key] = childResult.sanitised;
+                    } else {
+                        errors[key] = childResult.errors;
+                    }
+
+                } else if(isJsonObject(value)){
                     childResult = this.#traverse({doc: doc[key], definition:value, partialDoc});
                     if(childResult.valid){
                         sanitised[key] = childResult.sanitised;
@@ -195,6 +210,10 @@ class Schema {
         return {valid, sanitised, errors};
     }
 
+    get schema(){
+        return this.definition;
+    }
+
     get stringified(){
         return JSON.stringify(this.serialised)
     }
@@ -219,7 +238,7 @@ class Schema {
                 serialised[field] = {...rules}
                 serialised[field].type = rules.type.name;
 
-            } else if(isSchema(rules)){
+            } else if(isJsonObject(rules)){
                 serialised[field] = Schema.serialise(rules)
             }
             

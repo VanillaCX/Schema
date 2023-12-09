@@ -3,7 +3,12 @@ const {ShortText} = require("../modules/ShortText");
 const {DataTypes, Schema} = require("../modules/Schema");
 const {isEmpty} = require("../modules/Utils")
 
-
+const meta = new Schema([ // Array of Object
+{ // JSON Object of fields
+    key: {type:ShortText},
+    value: {type:ShortText}
+}
+])
 
 
 const schema = new Schema(
@@ -17,12 +22,7 @@ const schema = new Schema(
         "model": { // Field
             type:ShortText
         },
-        "meta": [ // Array of Object
-            { // JSON Object of fields
-                key: {type:ShortText},
-                value: {type:ShortText}
-            }
-        ],
+        "meta": meta,
         "taxonomy": { // JSON Object
             "tags": [ // Array of Field
                 { // Field
