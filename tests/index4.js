@@ -154,6 +154,30 @@ console.log(taxonomy.validate({
 }));
 
 
+class Categories extends Array {
+    static #schema = new Schema([{type: ShortText}]);
+
+    constructor(categories){
+        super();
+        const {valid, errors, sanitised} = Categories.schema.validate(categories);
+
+        console.log("Categories \t\t", sanitised);
+
+        if(!valid){
+            throw new SchemaError(errors)
+        }
+
+        this.push(...sanitised);
+    }
+
+    static get schema(){
+        return this.#schema;
+    }
+}
+
+console.log(Categories.schema.validate(["user-assigned-5", "true", "user-assigned-5"]));
+
+
 
 
 

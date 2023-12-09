@@ -108,15 +108,26 @@ class Schema {
             // DEFINITION IS AN ARRAY
             sanitised = [];
             const childDefinition = definition[0];
-
-            doc.forEach((childDoc, index) => {
-                childResult = this.#traverse({doc: childDoc, definition: childDefinition, partialDoc});
-                if(childResult.valid){
-                    sanitised.push(childResult.sanitised);
-                } else {
-                    errors[index] = childResult.errors;
-                }
-            })
+            if(isRule(childDefinition)){
+                doc.forEach((childDoc, index) => {
+                    fieldResult = this.#testField(childDoc, childDefinition, partialDoc);
+                    if(fieldResult.valid){
+                        sanitised.push(fieldResult.sanitised);
+                    } else {
+                        errors[index] = fieldResult.errors;
+                    }
+                })
+            } else {
+                doc.forEach((childDoc, index) => {
+                    childResult = this.#traverse({doc: childDoc, definition: childDefinition, partialDoc});
+                    if(childResult.valid){
+                        sanitised.push(childResult.sanitised);
+                    } else {
+                        errors[index] = childResult.errors;
+                    }
+                })
+            }
+            
 
         } else {
             // DEFINITION IS AN OBJECT
