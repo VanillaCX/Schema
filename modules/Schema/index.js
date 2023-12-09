@@ -152,11 +152,14 @@ class Schema {
 
                 } else if(isArray(value)) {
                     if(isRule(value[0])){
-                        doc[key].forEach((docElement, index) => {
+                    doc[key].forEach((docElement, index) => {
                             
                             fieldResult = this.#testField(docElement, value[0], partialDoc);
                             if(fieldResult.valid){
-                                sanitised[key] = fieldResult.sanitised;
+                                if(!sanitised[key]){
+                                    sanitised[key] = []
+                                }
+                                sanitised[key].push(fieldResult.sanitised);
                             } else {
                                 errors[key] = fieldResult.errors;
                             }

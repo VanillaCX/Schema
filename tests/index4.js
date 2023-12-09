@@ -109,7 +109,7 @@ const testDataPartial = {
 }
 
 
-
+/*
 
 {
     const {valid, errors, sanitised} = schema.validate(testData);
@@ -133,7 +133,7 @@ const testDataPartial = {
     console.log(parsed.slots[0]);
     console.groupEnd();
 }
-
+*/
 {
     //const {valid, errors, sanitised} = schema.validatePartial(testDataPartial);
     //console.log(JSON.stringify(sanitised, null, 4))
@@ -142,8 +142,16 @@ const testDataPartial = {
 }
 
 
+const taxonomy = new Schema({
+    tags: [{type: ShortText}],
+    categories: [{type: ShortText}],
+})
 
 
+console.log(taxonomy.validate({
+    "tags": ["user-assigned-4"],
+    "categories": ["user-assigned-4", "user-assigned-5"]
+}));
 
 
 
