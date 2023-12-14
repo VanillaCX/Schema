@@ -10,7 +10,7 @@ Make sure you have installed the package (See [Installation](#Installation)).
     
 ## Examples
     // Import Package
-    const {Schema, ShortText, LongText} = require("@VanillaCX/SchemaCX");
+    const {Schema, ShortText, LongText} = require("@VanillaCX/Schema");
 
     // Create a MongoDB client
     const mySchema = new Schema({
