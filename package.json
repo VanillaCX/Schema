@@ -4,7 +4,11 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-      "dev": "nodemon index.js"
+      "dev": "nodemon index.js",
+      "test": "nodemon ./tests/index.js",
+      "test2": "nodemon ./tests/index2.js",
+      "test3": "nodemon ./tests/index3.js",
+      "test4": "nodemon ./tests/index4.js"
     },
     "keywords": [],
     "author": "",

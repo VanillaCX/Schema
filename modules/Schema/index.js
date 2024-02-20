@@ -70,8 +70,8 @@ class Schema {
         if(!field && rules.required && !partialDoc){
             errors = "REQUIRED_FIELD";
         }
-    
-        if(field){
+
+        if(field && !rules.schema){
             const fieldValidation = rules.type.test(field)
     
             if(fieldValidation.valid){
@@ -100,8 +100,6 @@ class Schema {
         const errors = {};
         let childResult;
         let fieldResult;
-
-        
 
         
         if(isArray(definition)){
@@ -142,12 +140,38 @@ class Schema {
                     }
 
                 } else if(isSchema(value)){
-                    childResult = this.#traverse({doc: doc[key], definition:value.definition, partialDoc});
-                    if(childResult.valid){
-                        sanitised[key] = childResult.sanitised;
+                    sanitised = [];
+
+                    fieldResult = this.#testField(doc, definition, partialDoc);
+
+                    if(fieldResult.valid){
+                        
+                        if (isArray(doc)) {
+
+                            for (const [childKey, childDoc] of doc.entries()) {
+                                childResult = this.#traverse({doc: childDoc, definition:value.definition[0], partialDoc});
+                                if (childResult.valid) {
+                                    sanitised.push(childResult.sanitised);
+                                } else {
+                                    errors[childKey] = childResult.errors;
+                                }
+                            }
+                        } else {
+                            childResult = this.#traverse({doc: doc[key], definition:value.definition, partialDoc});
+                            if(childResult.valid){
+                                sanitised[key] = childResult.sanitised;
+                            } else {
+                                errors[key] = childResult.errors;
+                            }
+                        }
+
                     } else {
-                        errors[key] = childResult.errors;
+                        errors[key] = fieldResult.errors;
                     }
+
+                    
+
+                    
 
                 } else if(isJsonObject(value)){
                     childResult = this.#traverse({doc: doc[key], definition:value, partialDoc});

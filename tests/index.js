@@ -8,7 +8,7 @@ const ProjectSchema = new Schema({
 })
 
 {
-    const { valid, errors, sanitised} = ProjectSchema.validateDoc({
+    const { valid, errors, sanitised} = ProjectSchema.validate({
         title: "Lee",
         subtitle: "Bowyer",
         description: "Getting there little by Little",
