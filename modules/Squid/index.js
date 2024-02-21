@@ -1,13 +1,19 @@
 const {DataType} = require("../DataType");
 const crypto = require("node:crypto");
 
-class Squid {
+class Squid extends DataType{
     static name = "Squid";
     static #syntax = /^([0-9a-fA-F]{32})$/;
     
-    constructor(){}
+    constructor(value){
+        super()
+        this.value = value
+    }
 
-    static test(value, {
+    validate(){
+        return Squid.validate(this.value)
+    }
+    static validate(value, {
         syntax = this.#syntax
     } = {}){
 

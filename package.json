@@ -4,19 +4,14 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-      "dev": "nodemon index.js",
-      "test": "nodemon ./tests/index.js",
-      "test2": "nodemon ./tests/index2.js",
-      "test3": "nodemon ./tests/index3.js",
-      "test4": "nodemon ./tests/index4.js"
+        "dev": "nodemon index.js",
+        "test-dataTypes": "nodemon ./tests/dataTypes.js",
+        "test-schema": "nodemon ./tests/schema.js"
     },
     "keywords": [],
     "author": "",
     "license": "",
-    "dependencies": {
-    },
     "devDependencies": {
-      "nodemon": "^3.0.2"
+        "nodemon": "^3.0.2"
     }
-  }
-  
+}

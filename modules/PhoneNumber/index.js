@@ -2,13 +2,20 @@ const {DataType} = require("../DataType");
 
 class PhoneNumber extends DataType {
     static name = "PhoneNumber";
-    constructor(){}
 
+    constructor(value){
+        super()
+        this.value = value
+    }
+
+    validate(){
+        return PhoneNumber.validate(this.value)
+    }
     static #minLength = 0;
     static #maxLength = 255;
     static #allowBasicHTML = false;
     
-    static test(value, {
+    static validate(value, {
         minLength = this.#minLength,
         maxLength = this.#maxLength
     } = {}){

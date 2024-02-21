@@ -2,12 +2,28 @@ const {DataType} = require("../DataType");
 
 class Flag extends DataType{
     static name = "Flag";
-    constructor(){}
-    
-    static test(value){
+
+    constructor(value){
+        super()
+        this.value = value
+    }
+
+    validate(){
+        return Flag.validate(this.value)
+    }
+
+    toggle(){
+        return this.value = Flag.toggle(this.value)
+    }
+
+    static toggle(value) {
+        return !value
+    }
+
+    static validate(value){
         const errors = [];
-        
-        if(!typeof value === "boolean"){
+
+        if(typeof value !== "boolean"){
             errors.push("TYPE_ERROR")
         }
         

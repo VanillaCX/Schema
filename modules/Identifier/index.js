@@ -3,7 +3,15 @@ const crypto = require("node:crypto");
 
 class Identifier extends DataType {
     static name = "Identifier";
-    constructor(){}
+
+    constructor(value){
+        super()
+        this.value = value
+    }
+
+    validate(){
+        return Identifier.validate(this.value)
+    }
 
     static #minLength = 3;
     static #maxLength = 100;
@@ -22,7 +30,7 @@ class Identifier extends DataType {
         return random;
     }
 
-    static test(value){
+    static validate(value){
         const errors = [];
 
         if(typeof value === "number"){
@@ -50,7 +58,7 @@ class Identifier extends DataType {
             errors.push("SYNTAX_ERROR")
         }
 
-        if(this.#reservedWords.indexOf(value).length > -1){
+        if(this.#reservedWords.indexOf(value) > -1){
             errors.push("RESERVED_WORD");
         }
        

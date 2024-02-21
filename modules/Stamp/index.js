@@ -10,6 +10,10 @@ class Stamp extends DataType {
         this.#created = Stamp.now();
     }
 
+    validate(){
+        return Stamp.validate(this.created)
+    }
+
     get created(){
         return this.#created
     }
@@ -21,7 +25,7 @@ class Stamp extends DataType {
     }
 
     static age(timestamp){
-        const {valid, errors, sanitised} = this.test(timestamp);
+        const {valid, errors, sanitised} = this.validate(timestamp);
 
         if(!valid){
             return new Error(errors)
@@ -35,7 +39,7 @@ class Stamp extends DataType {
         return Date.now()
     }
 
-    static test(value, {
+    static validate(value, {
         syntax = this.#syntax
     } = {}){
         

@@ -1,5 +1,3 @@
-const { isEmpty } = require("../Utils");
-
 const {Identifier} = require("../Identifier");
 const {ShortText} = require("../ShortText");
 const {LongText} = require("../LongText");
@@ -29,26 +27,31 @@ const DataTypes = {
     Flag
 }
 
+const isEmpty = (obj) => {
+    return Object.keys(obj).length === 0;
+}
+
 const isSchema = (value) => {
-     return value.name === "Schema"
+    return value.name === "Schema"
 }
 
 const isObject = (value) => {
-    return typeof value === 'object' && value !== null && value.constructor === Object
+   return typeof value === 'object' && value !== null && value.constructor === Object
 }
 
 const isRule = (value) => {
-    return value.type && value.type.name && DataTypes[value.type.name]
-    
+   return value.type && value.type.name && DataTypes[value.type.name]
+   
 }
 
 const isJsonObject = (value) => {
-    return isObject(value) && !isRule(value)
+   return isObject(value) && !isRule(value)
 }
 
 const isArray = (value) => {
-    return Array.isArray(value)
+   return Array.isArray(value)
 }
+
 
 class Schema {
     name = "Schema"
@@ -58,7 +61,6 @@ class Schema {
     }
 
     #testField = (field, rules, partialDoc = false) => {
-    
 
         let sanitised = "";
         let errors = [];
@@ -72,7 +74,7 @@ class Schema {
         }
 
         if(field && !rules.schema){
-            const fieldValidation = rules.type.test(field)
+            const fieldValidation = rules.type.validate(field)
     
             if(fieldValidation.valid){
                 sanitised = fieldValidation.sanitised
@@ -132,6 +134,7 @@ class Schema {
             Object.entries(definition).forEach(([key, value]) => {
                 if(isRule(value)){
                     // FIELD
+                    console.log("value:", value)
                     fieldResult = this.#testField(doc[key], value, partialDoc);
                     if(fieldResult.valid){
                         sanitised[key] = fieldResult.sanitised;
@@ -140,6 +143,7 @@ class Schema {
                     }
 
                 } else if(isSchema(value)){
+                    console.log("value:", value)
                     sanitised = [];
 
                     fieldResult = this.#testField(doc, definition, partialDoc);
@@ -157,7 +161,10 @@ class Schema {
                                 }
                             }
                         } else {
-                            childResult = this.#traverse({doc: doc[key], definition:value.definition, partialDoc});
+                            console.log("HEREHEREJEREJER")
+                            console.log("doc:", doc)
+                            childResult = this.#traverse({doc: doc, definition:value.definition, partialDoc});
+                            //childResult = this.#traverse({doc: doc[key], definition:value.definition, partialDoc});
                             if(childResult.valid){
                                 sanitised[key] = childResult.sanitised;
                             } else {
@@ -236,34 +243,41 @@ class Schema {
         }
     }
 
+    
     validate(document){
         const {valid, sanitised, errors} = this.#traverse({doc: document});
 
         return {valid, sanitised, errors};
     }
 
+    
     validatePartial(document){
         const {valid, sanitised, errors} = this.#traverse({doc: document, partialDoc: true});
 
         return {valid, sanitised, errors};
     }
 
+    
     get schema(){
         return this.definition;
     }
 
+    
     get stringified(){
         return JSON.stringify(this.serialised)
     }
 
+    
     get pretty(){
         return JSON.stringify(this.serialised, null, 4)
     }
 
+    
     get serialised(){
         return Schema.serialise(this.definition);
     }
 
+    
     static serialise(definition){
         const serialised = (isArray(definition)) ? [] : {};
 

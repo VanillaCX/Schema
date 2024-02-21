@@ -5,6 +5,7 @@ class DataType {
     static #removeAllHTMLTags = /(<[^>]+>)/g;
     static #keepBasicHTMLTags = /(<[^>]+>)/g;
 
+
     static stripHTML(value, {allowBasicHTML = DataType.#allowBasicHTML} = {}){
         const regExp = (allowBasicHTML) ? DataType.#keepBasicHTMLTags : DataType.#removeAllHTMLTags;
 

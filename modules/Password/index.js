@@ -2,8 +2,15 @@ const {DataType} = require("../DataType");
 
 class Password extends DataType {
     static name = "Password";
-    constructor(){}
-    
+
+    constructor(value){
+        super()
+        this.value = value
+    }
+
+    validate(){
+        return Password.validate(this.value)
+    }    
     static #minLength = 8;
     static #maxLength = 255;
     
@@ -27,7 +34,7 @@ class Password extends DataType {
         }
     ]
     
-    static test(value, {
+    static validate(value, {
             syntax = this.#syntax,
             minLength = this.#minLength,
             maxLength = this.#maxLength

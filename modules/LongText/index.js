@@ -2,12 +2,20 @@ const {DataType} = require("../DataType");
 
 class LongText extends DataType {
     static name = "LongText";
-    constructor(){}
-    
+
+    constructor(value){
+        super()
+        this.value = value
+    }
+
+    validate(){
+        return LongText.validate(this.value)
+    }    
+
     static #minLength = 0;
     static #maxLength = 50000;
     
-    static test(value, {
+    static validate(value, {
         minLength = this.#minLength,
         maxLength = this.#maxLength
     } = {}){
