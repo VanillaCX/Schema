@@ -134,7 +134,6 @@ class Schema {
             Object.entries(definition).forEach(([key, value]) => {
                 if(isRule(value)){
                     // FIELD
-                    console.log("value:", value)
                     fieldResult = this.#testField(doc[key], value, partialDoc);
                     if(fieldResult.valid){
                         sanitised[key] = fieldResult.sanitised;
@@ -143,7 +142,6 @@ class Schema {
                     }
 
                 } else if(isSchema(value)){
-                    console.log("value:", value)
                     sanitised = [];
 
                     fieldResult = this.#testField(doc, definition, partialDoc);
@@ -151,6 +149,7 @@ class Schema {
                     if(fieldResult.valid){
                         
                         if (isArray(doc)) {
+
 
                             for (const [childKey, childDoc] of doc.entries()) {
                                 childResult = this.#traverse({doc: childDoc, definition:value.definition[0], partialDoc});
@@ -161,12 +160,12 @@ class Schema {
                                 }
                             }
                         } else {
-                            console.log("HEREHEREJEREJER")
-                            console.log("doc:", doc)
+                            sanitised = {};
                             childResult = this.#traverse({doc: doc, definition:value.definition, partialDoc});
                             //childResult = this.#traverse({doc: doc[key], definition:value.definition, partialDoc});
                             if(childResult.valid){
-                                sanitised[key] = childResult.sanitised;
+                                //sanitised[key] = childResult.sanitised;
+                                sanitised = childResult.sanitised;
                             } else {
                                 errors[key] = childResult.errors;
                             }
@@ -309,7 +308,7 @@ class Schema {
         Object.entries(parsed).forEach(([field, rules]) => {
 
             if(rules.type && DataTypes[rules.type]){
-                rules.type = DataTypes[rules.type]
+                rules.type = DataTypes[rules.type] 
             } else if(isObject(rules)) {
                 parsed[field] = Schema.parse(parsed[field], {isStringified: false})
             } else if(isArray(rules)){
