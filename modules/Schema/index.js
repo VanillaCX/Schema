@@ -1,3 +1,5 @@
+const {ErrorMissing} = require("@VanillaCX/Errors")
+
 const {Identifier} = require("../Identifier");
 const {ShortText} = require("../ShortText");
 const {LongText} = require("../LongText");
@@ -9,7 +11,6 @@ const {EventLogger} = require("../EventLogger");
 const {Squid} = require("../Squid");
 const {NameSpace} = require("../NameSpace");
 const {PhoneNumber} = require("../PhoneNumber");
-const {SchemaError} = require("../SchemaError");
 const {Flag} = require("../Flag");
 
 const DataTypes = {
@@ -27,303 +28,181 @@ const DataTypes = {
     Flag
 }
 
-const isEmpty = (obj) => {
-    return Object.keys(obj).length === 0;
-}
-
-const isSchema = (value) => {
-    return value.name === "Schema"
-}
-
-const isObject = (value) => {
-   return typeof value === 'object' && value !== null && value.constructor === Object
-}
-
-const isRule = (value) => {
-   return value.type && value.type.name && DataTypes[value.type.name]
-   
-}
-
-const isJsonObject = (value) => {
-   return isObject(value) && !isRule(value)
-}
-
-const isArray = (value) => {
-   return Array.isArray(value)
-}
-
-
 class Schema {
-    name = "Schema"
-    definition;
-    constructor(definition){
-        this.definition = definition;
+    constructor({definition, required = false} = {}){
+        this.definition = definition
+        this.required = required
+        this.type = Schema
     }
 
-    #testField = (field, rules, partialDoc = false) => {
-
-        let sanitised = "";
-        let errors = [];
-    
-        if(!field && rules.default){
-            field = rules.default;
-        }
-    
-        if(!field && rules.required && !partialDoc){
-            errors = "REQUIRED_FIELD";
-        }
-
-        if(field && !rules.schema){
-            const fieldValidation = rules.type.validate(field)
-    
-            if(fieldValidation.valid){
-                sanitised = fieldValidation.sanitised
-            } else {
-                errors = fieldValidation.errors
+    static parse(stringifiedJSON){
+        return JSON.parse(stringifiedJSON, (key, value) => {
+            if (key === "type") {
+                // Doubling the age value
+                return DataTypes[value]
             }
-        }
-    
-        const valid = isEmpty(errors);
-    
-        if(!valid){
-            sanitised = null
-        }
-    
-        return {
-            valid,
-            errors,
-            sanitised
-        }
+            return value;
+        })
     }
 
-    #traverse({doc, definition = this.definition, partialDoc = false}){
+    toString(){
+        // Using replacer function to replace value of type (which is class / object) with its name (value.name)
+        return JSON.stringify(this, (key, value) => {
+            if (key == "type") {
+                return value.name
+            } 
 
-        let sanitised = {};
-        const errors = {};
-        let childResult;
-        let fieldResult;
+            return value
+        })
+    }
 
-        
-        if(isArray(definition)){
-            // DEFINITION IS AN ARRAY
-            sanitised = [];
-            const childDefinition = definition[0];
-            if(isRule(childDefinition)){
-                doc.forEach((childDoc, index) => {
-                    fieldResult = this.#testField(childDoc, childDefinition, partialDoc);
-                    if(fieldResult.valid){
-                        sanitised.push(fieldResult.sanitised);
-                    } else {
-                        errors[index] = fieldResult.errors;
-                    }
-                })
-            } else {
-                doc.forEach((childDoc, index) => {
-                    childResult = this.#traverse({doc: childDoc, definition: childDefinition, partialDoc});
-                    if(childResult.valid){
-                        sanitised.push(childResult.sanitised);
-                    } else {
-                        errors[index] = childResult.errors;
-                    }
-                })
-            }
+    isSchema(value){
+        return (value && value.type && value.type.name == "Schema") ? true : false
+    }
+
+    isRule(value) {
+        return (value && value.type && value.type.name) ? true : false
+    }
+
+    isList(value) {
+        return Array.isArray(value)
+    }
+
+    #test(schema, document){
+        let sanitised = {}
+        let errors = {}
+        let valid = true
+
+        for (const [key, value] of Object.entries(schema.definition)){
+
             
 
-        } else {
-            // DEFINITION IS AN OBJECT
-            Object.entries(definition).forEach(([key, value]) => {
-                if(isRule(value)){
-                    // FIELD
-                    fieldResult = this.#testField(doc[key], value, partialDoc);
-                    if(fieldResult.valid){
-                        sanitised[key] = fieldResult.sanitised;
+            if(this.isSchema(value)){
+
+                /**
+                 * SCHEMA: LIST-BASED DEFINITION
+                 */
+                if (this.isList(value.definition)) {
+                    // Defintiion is a list
+
+                    const listRuleSet = value.definition[0]
+                    const listRequired = value.required
+                    const list = document[key] || []
+
+
+                    if(listRequired && list.length == 0){
+                        errors[key] = ErrorMissing.code
                     } else {
-                        errors[key] = fieldResult.errors;
-                    }
-
-                } else if(isSchema(value)){
-                    sanitised = [];
-
-                    fieldResult = this.#testField(doc, definition, partialDoc);
-
-                    if(fieldResult.valid){
-                        
-                        if (isArray(doc)) {
-
-
-                            for (const [childKey, childDoc] of doc.entries()) {
-                                childResult = this.#traverse({doc: childDoc, definition:value.definition[0], partialDoc});
-                                if (childResult.valid) {
-                                    sanitised.push(childResult.sanitised);
-                                } else {
-                                    errors[childKey] = childResult.errors;
-                                }
-                            }
-                        } else {
-                            sanitised = {};
-                            childResult = this.#traverse({doc: doc, definition:value.definition, partialDoc});
-                            //childResult = this.#traverse({doc: doc[key], definition:value.definition, partialDoc});
-                            if(childResult.valid){
-                                //sanitised[key] = childResult.sanitised;
-                                sanitised = childResult.sanitised;
-                            } else {
-                                errors[key] = childResult.errors;
-                            }
-                        }
-
-                    } else {
-                        errors[key] = fieldResult.errors;
-                    }
-
-                    
-
-                    
-
-                } else if(isJsonObject(value)){
-                    childResult = this.#traverse({doc: doc[key], definition:value, partialDoc});
-                    if(childResult.valid){
-                        sanitised[key] = childResult.sanitised;
-                    } else {
-                        errors[key] = childResult.errors;
-                    }
-
-
-                } else if(isObject(value)){
-                    // ???
-
-                } else if(isArray(value)) {
-                    if(isRule(value[0])){
-                    doc[key].forEach((docElement, index) => {
+                        for(const entry of list){
+                            const listEntryResult = this.#test({definition: listRuleSet}, entry)
                             
-                            fieldResult = this.#testField(docElement, value[0], partialDoc);
-                            if(fieldResult.valid){
-                                if(!sanitised[key]){
+                            if (listEntryResult.valid == false) {
+                                if (!errors[key]) {
+                                    errors[key] = []
+                                }
+                                errors[key].push(listEntryResult.errors)
+                            } else {
+                                if (!sanitised[key]) {
                                     sanitised[key] = []
                                 }
-                                sanitised[key].push(fieldResult.sanitised);
-                            } else {
-                                errors[key] = fieldResult.errors;
+                                sanitised[key].push(listEntryResult.sanitised)
                             }
-        
-                        })
-                    } else {
-                        sanitised[key] = [];
-                        
-                        doc[key].forEach((docElement, index) => {
-                            
-                            childResult = this.#traverse({doc: docElement, definition: value[0], partialDoc});
-                            if(childResult.valid){
-                                sanitised[key].push(childResult.sanitised);
-                            } else {
-                                if(!errors[key]){
-                                    errors[key] = {}
-                                }
-                                errors[key][index] = childResult.errors;
-                            }
-                        })
+                        }
                     }
-                    
-                   
-                    
+
+                /**
+                 * SCHEMA: OBJECT-BASED DEFINITION
+                 */
+                } else {
+                    const childSchemaResults = this.#test(value, document[key])
+
+                    if (childSchemaResults.valid == false) {
+                        errors[key] = childSchemaResults.errors
+                    } else {
+                        sanitised[key] = childSchemaResults.sanitised
+                    }
                 }
-            })
+
+                
+            /**
+             * RULE: SINGLE
+             */
+            } else if (this.isRule(value)) {
+                if(!document || !document[key]) {
+                    if (value.required) {
+                        errors[key] = ErrorMissing.code
+                    }
+                } else {
+                    const ruleResults = value.type.test(document[key])
+
+                    if (ruleResults.valid == false) {
+                        errors[key] = ruleResults.errors
+                    } else {
+                        sanitised[key] = ruleResults.sanitised
+                    }
+                }
+
+
+                
+
+            /**
+             * RULE: LIST OF RULES
+             */
+            } else if (this.isList(value) && this.isRule(value[0])) {
+
+                    const rule = value[0];
+                    const list = document[key] || [];
+
+                    if(rule.required && list.length == 0){
+                        errors[key] = ErrorMissing.code
+                    } else {
+                        for(const entry of list){
+
+                            const ruleResults = rule.type.test(entry)
+
+                            if (ruleResults.valid == false) {
+                                if (!errors[key]) {
+                                    errors[key] = []
+                                }
+                                errors[key].push(ruleResults.errors)
+                            } else {
+                                if (!sanitised[key]) {
+                                    sanitised[key] = []
+                                }
+                                sanitised[key].push(ruleResults.sanitised)
+                            }
+                        }
+                    }
+
+                    
+
+
+            }
         }
 
-        const valid = isEmpty(errors);
+        // Check if meets required requirements
+        if (schema.required && Object.keys(schema.definition).length == 0) {
+            errors["BASE"] = ErrorMissing.code
+        }
 
-        if(!valid){
-            sanitised = null
+        // Invalid document
+        if ((Object.keys(errors).length > 0)) {
+            valid = false;
+            sanitised = {}
         }
 
         return {
             valid,
-            errors,
-            sanitised
+            sanitised,
+            errors
         }
     }
 
-    
-    validate(document){
-        const {valid, sanitised, errors} = this.#traverse({doc: document});
+    test(document){
+        const result = this.#test(this, document)
 
-        return {valid, sanitised, errors};
-    }
-
-    
-    validatePartial(document){
-        const {valid, sanitised, errors} = this.#traverse({doc: document, partialDoc: true});
-
-        return {valid, sanitised, errors};
-    }
-
-    
-    get schema(){
-        return this.definition;
-    }
-
-    
-    get stringified(){
-        return JSON.stringify(this.serialised)
-    }
-
-    
-    get pretty(){
-        return JSON.stringify(this.serialised, null, 4)
-    }
-
-    
-    get serialised(){
-        return Schema.serialise(this.definition);
-    }
-
-    
-    static serialise(definition){
-        const serialised = (isArray(definition)) ? [] : {};
-
-        Object.entries(definition).forEach(([field, rules]) => {
-
-            if(isArray(definition[field])){
-                serialised[field] = [...rules]
-                
-            } else if(isRule(rules)){
-                serialised[field] = {...rules}
-                serialised[field].type = rules.type.name;
-
-            } else if(isJsonObject(rules)){
-                serialised[field] = Schema.serialise(rules)
-            }
-            
-            if(isArray(rules)) {
-                serialised[field] = [];
-                serialised[field] = Schema.serialise(rules)
-            }
-        })
-
-        return serialised;
-    }
-
-    static parse(schema, {isStringified = true} = {}){
-        const parsed = (isStringified) ? JSON.parse(schema) : schema;
-
-        Object.entries(parsed).forEach(([field, rules]) => {
-
-            if(rules.type && DataTypes[rules.type]){
-                rules.type = DataTypes[rules.type] 
-            } else if(isObject(rules)) {
-                parsed[field] = Schema.parse(parsed[field], {isStringified: false})
-            } else if(isArray(rules)){
-                if(rules[0].type && DataTypes[rules[0].type]){
-                    parsed[field] = Schema.parse(parsed[field], {isStringified: false})
-                } else {
-                    parsed[field] = Schema.parse(parsed[field], {isStringified: false})
-                }
-            }
-            
-        })
-
-        return parsed;
+        return result
     }
 }
 
-
-module.exports = { Schema, DataTypes, SchemaError }
+module.exports = { Schema, DataTypes }

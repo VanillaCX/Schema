@@ -11,6 +11,9 @@
     "keywords": [],
     "author": "",
     "license": "",
+    "dependencies": {
+        "@VanillaCX/Errors": "github:VanillaCX/Errors"
+    },
     "devDependencies": {
         "nodemon": "^3.0.2"
     }

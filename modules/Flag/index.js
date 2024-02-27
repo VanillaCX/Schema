@@ -1,30 +1,18 @@
 const {DataType} = require("../DataType");
+const {ErrorType} = require("@VanillaCX/Errors")
 
 class Flag extends DataType{
     static name = "Flag";
-
-    constructor(value){
-        super()
-        this.value = value
-    }
-
-    validate(){
-        return Flag.validate(this.value)
-    }
-
-    toggle(){
-        return this.value = Flag.toggle(this.value)
-    }
 
     static toggle(value) {
         return !value
     }
 
-    static validate(value){
+    static test(value){
         const errors = [];
 
         if(typeof value !== "boolean"){
-            errors.push("TYPE_ERROR")
+            errors.push(ErrorType.code)
         }
         
         const valid = (errors.length === 0);
@@ -35,6 +23,19 @@ class Flag extends DataType{
             errors,
             sanitised
         };
+    }
+
+    constructor(value){
+        super()
+        this.value = value
+    }
+
+    test(){
+        return Flag.test(this.value)
+    }
+
+    toggle(){
+        return this.value = Flag.toggle(this.value)
     }
     
 }

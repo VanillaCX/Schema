@@ -1,33 +1,21 @@
 const {DataType} = require("../DataType");
+const {ErrorTooLong, ErrorTooShort} = require("@VanillaCX/Errors")
 
 class LongText extends DataType {
     static name = "LongText";
-
-    constructor(value){
-        super()
-        this.value = value
-    }
-
-    validate(){
-        return LongText.validate(this.value)
-    }    
-
     static #minLength = 0;
     static #maxLength = 50000;
     
-    static validate(value, {
-        minLength = this.#minLength,
-        maxLength = this.#maxLength
-    } = {}){
+    static test(value){
         const errors = [];
         value = this.stripHTML(value);
         
-        if(value.length < minLength){
-            errors.push("TOO_SHORT")
+        if(value.length < this.#minLength){
+            errors.push(ErrorTooShort.code)
         }
         
-        if(value.length > maxLength){
-            errors.push("TOO_LONG")
+        if(value.length > this.#maxLength){
+            errors.push(ErrorTooLong.code)
         }
        
         const valid = (errors.length === 0);
@@ -39,6 +27,15 @@ class LongText extends DataType {
             sanitised
         };
     }
+
+    constructor(value){
+        super()
+        this.value = value
+    }
+
+    test(){
+        return LongText.test(this.value)
+    }  
     
 }
 

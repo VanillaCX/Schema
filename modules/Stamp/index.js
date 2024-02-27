@@ -1,4 +1,5 @@
 const {DataType} = require("../DataType");
+const {ErrorSyntax} = require("@VanillaCX/Errors")
 
 class Stamp extends DataType {
     #created;
@@ -10,8 +11,8 @@ class Stamp extends DataType {
         this.#created = Stamp.now();
     }
 
-    validate(){
-        return Stamp.validate(this.created)
+    test(){
+        return Stamp.test(this.created)
     }
 
     get created(){
@@ -19,13 +20,11 @@ class Stamp extends DataType {
     }
 
     get age(){
-        const startTimestamp = this.created;
-        
-        return Stamp.now() - startTimestamp;
+        return Stamp.now() - this.created;
     }
 
     static age(timestamp){
-        const {valid, errors, sanitised} = this.validate(timestamp);
+        const {valid, errors, sanitised} = this.test(timestamp);
 
         if(!valid){
             return new Error(errors)
@@ -39,14 +38,12 @@ class Stamp extends DataType {
         return Date.now()
     }
 
-    static validate(value, {
-        syntax = this.#syntax
-    } = {}){
+    static test(value){
         
         const errors = [];
         
-        if(!syntax.test(value)){
-            errors.push("SYNTAX_ERROR")
+        if(!this.#syntax.test(value)){
+            errors.push(ErrorSyntax.code)
         }
        
         const valid = (errors.length === 0);

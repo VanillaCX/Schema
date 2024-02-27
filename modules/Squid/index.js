@@ -1,5 +1,7 @@
-const {DataType} = require("../DataType");
 const crypto = require("node:crypto");
+
+const {DataType} = require("../DataType");
+const {ErrorSyntax} = require("@VanillaCX/Errors")
 
 class Squid extends DataType{
     static name = "Squid";
@@ -10,17 +12,15 @@ class Squid extends DataType{
         this.value = value
     }
 
-    validate(){
-        return Squid.validate(this.value)
+    test(){
+        return Squid.test(this.value)
     }
-    static validate(value, {
-        syntax = this.#syntax
-    } = {}){
+    static test(value){
 
         const errors = [];
         
-        if(!syntax.test(value)){
-            errors.push("SYNTAX_ERROR")
+        if(!this.#syntax.test(value)){
+            errors.push(ErrorSyntax.code)
         }
        
         const valid = (errors.length === 0);

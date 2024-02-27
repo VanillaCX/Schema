@@ -1,34 +1,23 @@
 const {DataType} = require("../DataType");
+const {ErrorType, ErrorTooLong, ErrorTooShort} = require("@VanillaCX/Errors")
+
 
 class PhoneNumber extends DataType {
     static name = "PhoneNumber";
-
-    constructor(value){
-        super()
-        this.value = value
-    }
-
-    validate(){
-        return PhoneNumber.validate(this.value)
-    }
     static #minLength = 0;
     static #maxLength = 255;
-    static #allowBasicHTML = false;
     
-    static validate(value, {
-        minLength = this.#minLength,
-        maxLength = this.#maxLength
-    } = {}){
+    static test(value){
         
         const errors = [];
         value = this.stripHTML(value);
         
-        if(value.length < minLength){
-            errors.push("TOO_SHORT")
+        if(value.length < this.#minLength){
+            errors.push(ErrorTooShort.code)
         }
         
-        if(value.length > maxLength){
-            errors.push("TOO_LONG")
+        if(value.length > this.#maxLength){
+            errors.push(ErrorTooLong.code)
         }
        
         const valid = (errors.length === 0);
@@ -39,6 +28,15 @@ class PhoneNumber extends DataType {
             errors,
             sanitised
         };
+    }
+
+    constructor(value){
+        super()
+        this.value = value
+    }
+
+    test(){
+        return PhoneNumber.test(this.value)
     }
     
 }

@@ -1,5 +1,7 @@
 class DataType {
-    constructor(){}
+    constructor(value){
+        this.value = value
+    }
 
     static #allowBasicHTML = false;
     static #removeAllHTMLTags = /(<[^>]+>)/g;
@@ -7,6 +9,7 @@ class DataType {
 
 
     static stripHTML(value, {allowBasicHTML = DataType.#allowBasicHTML} = {}){
+        value = String(value)
         const regExp = (allowBasicHTML) ? DataType.#keepBasicHTMLTags : DataType.#removeAllHTMLTags;
 
         const stripped = value.replace(regExp, "");

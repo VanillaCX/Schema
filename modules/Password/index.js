@@ -1,16 +1,8 @@
 const {DataType} = require("../DataType");
+const {ErrorSyntax, ErrorTooLong, ErrorTooShort} = require("@VanillaCX/Errors")
 
 class Password extends DataType {
     static name = "Password";
-
-    constructor(value){
-        super()
-        this.value = value
-    }
-
-    validate(){
-        return Password.validate(this.value)
-    }    
     static #minLength = 8;
     static #maxLength = 255;
     
@@ -34,28 +26,25 @@ class Password extends DataType {
         }
     ]
     
-    static validate(value, {
-            syntax = this.#syntax,
-            minLength = this.#minLength,
-            maxLength = this.#maxLength
-        } = {}){
+    static test(value){
         
         const errors = [];
         value = this.stripHTML(value);
         
-        if(value.length < minLength){
-            errors.push("TOO_SHORT")
+        if(value.length < this.#minLength){
+            errors.push(ErrorTooShort.code)
         }
         
-        if(value.length > maxLength){
-            errors.push("TOO_LONG")
+        if(value.length > this.#maxLength){
+            errors.push(ErrorTooLong.code)
         }
         
-        syntax.forEach((rule) => {
+        this.#syntax.forEach((rule) => {
             const occurances = value.match(rule.regexp) || [];
             
             if(occurances.length < rule.min){
-                errors.push(`REQUIRES_MIN_${rule.min}_${rule.type.toUpperCase()}`)
+                const errorMessage = `REQUIRES_MIN_${rule.min}_${rule.type.toUpperCase()}`;
+                errors.push(new ErrorSyntax(errorMessage))
             }
             
         })
@@ -69,6 +58,15 @@ class Password extends DataType {
             sanitised
         };
     }
+
+    constructor(value){
+        super()
+        this.value = value
+    }
+
+    test(){
+        return Password.test(this.value)
+    }  
     
 }
 

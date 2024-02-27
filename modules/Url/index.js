@@ -1,4 +1,5 @@
 const {DataType} = require("../DataType");
+const {ErrorSyntax, ErrorTooLong, ErrorTooShort} = require("@VanillaCX/Errors")
 
 class Url extends DataType {
     static name = "Url";
@@ -7,39 +8,30 @@ class Url extends DataType {
         super()
         this.value = value
     }
-
-    validate(){
-        return Url.validate(this.value)
-    }
     
     static #minLength = 5;
     static #maxLength = 255;
     static #httpsOnly = true;
     static #syntax = /^http(s)?:\/\/[a-zA-Z0-9.-@]+.[a-zA-Z]{2}$/;
        
-    static validate(value, {
-        syntax = this.#syntax,
-        httpsOnly = this.#httpsOnly,
-        minLength = this.#minLength,
-        maxLength = this.#maxLength
-    } = {}){
+    static test(value){
         const errors = [];
         value = this.stripHTML(value);
         
-        if(value.length < minLength){
-            errors.push("TOO_SHORT")
+        if(value.length < this.#minLength){
+            errors.push(ErrorTooShort.code)
         }
         
-        if(value.length > maxLength){
-            errors.push("TOO_LONG")
+        if(value.length > this.#maxLength){
+            errors.push(ErrorTooLong.code)
         }
 
-        if(httpsOnly && value.substring(0, 8) !== "https://"){
+        if(this.#httpsOnly && value.substring(0, 8) !== "https://"){
             errors.push("MUST_USE_HTTPS")
         }
         
-        if(!syntax.test(value)){
-            errors.push("SYNTAX_ERROR")
+        if(!this.#syntax.test(value)){
+            errors.push(ErrorSyntax.code)
         }
         
         const valid = (errors.length === 0);
@@ -50,6 +42,10 @@ class Url extends DataType {
             errors,
             sanitised
         };
+    }
+
+    test(){
+        return Url.test(this.value)
     }
     
 }

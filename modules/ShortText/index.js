@@ -1,26 +1,19 @@
 const {DataType} = require("../DataType");
+const {ErrorType, ErrorTooLong, ErrorTooShort} = require("@VanillaCX/Errors")
 
 class ShortText extends DataType {
-    static name = "ShortText";
-
     constructor(value){
-        super()
-        this.value = value
+        super(value)
     }
 
-    validate(){
-        return ShortText.validate(this.value)
-    }
-    static #minLength = 0;
+    static name = "ShortText"
+
+    static #minLength = 2;
     static #maxLength = 255;
-    static #allowBasicHTML = false;
-    
-    static validate(value, {
-        minLength = this.#minLength,
-        maxLength = this.#maxLength
-    } = {}){
-        
-        const errors = [];
+
+    static test(value){
+        const errors = []
+        value = this.stripHTML(value);
 
         if(typeof value === "number"){
             value = value.toString();
@@ -30,18 +23,17 @@ class ShortText extends DataType {
             value = this.stripHTML(value);
 
         } else {
-            errors.push("TYPE_MISMATCH")
-        
+            errors.push(ErrorType.code)
+        }
+
+        if(value.length < this.#minLength){
+            errors.push(ErrorTooShort.code)
         }
         
-        if(value.length < minLength){
-            errors.push("TOO_SHORT")
+        if(value.length > this.#maxLength){
+            errors.push(ErrorTooLong.code)
         }
         
-        if(value.length > maxLength){
-            errors.push("TOO_LONG")
-        }
-       
         const valid = (errors.length === 0);
         const sanitised = (valid) ? value : null;
         
@@ -50,6 +42,11 @@ class ShortText extends DataType {
             errors,
             sanitised
         };
+
+    }
+
+    test(){
+        return ShortText.test(this.value)
     }
     
 }

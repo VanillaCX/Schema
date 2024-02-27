@@ -1,51 +1,31 @@
 const {DataType} = require("../DataType");
+const {ErrorTooLong, ErrorTooShort, ErrorSyntax} = require("@VanillaCX/Errors")
 
 class Email extends DataType{
-    static name = "Email";
-    
     constructor(value){
-        super()
-        this.value = value
+        super(value)
     }
 
-    validate(){
-        return Email.validate(this.value)
-    }
-    
+    static name = "Email"
+
     static #minLength = 5;
     static #maxLength = 255;
     static #syntax = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    static get minLength(){
-        return Email.#minLength
-    }
-
-    static get maxLength(){
-        return Email.#minLength
-    }
-
-    static get syntax(){
-        return Email.#syntax
-    }
-    
-    static validate(value, {
-        syntax = this.#syntax,
-        minLength = this.#minLength,
-        maxLength = this.#maxLength
-    } = {}){
-        const errors = [];
+    static test(value){
+        const errors = []
         value = this.stripHTML(value);
-        
-        if(value.length < minLength){
-            errors.push("TOO_SHORT")
+
+        if(value.length < this.#minLength){
+            errors.push(ErrorTooShort.code)
         }
         
-        if(value.length > maxLength){
-            errors.push("TOO_LONG")
+        if(value.length > this.#maxLength){
+            errors.push(ErrorTooLong.code)
         }
         
-        if(!syntax.test(value)){
-            errors.push("SYNTAX_ERROR")
+        if(!this.#syntax.test(value)){
+            errors.push(ErrorSyntax.code)
         }
         
         const valid = (errors.length === 0);
@@ -56,6 +36,11 @@ class Email extends DataType{
             errors,
             sanitised
         };
+
+    }
+
+    test(){
+        return Email.test(this.value)
     }
     
 }

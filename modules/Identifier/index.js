@@ -1,18 +1,10 @@
-const {DataType} = require("../DataType");
 const crypto = require("node:crypto");
+
+const {DataType} = require("../DataType");
+const {ErrorType, ErrorSyntax, ErrorTooLong, ErrorTooShort} = require("@VanillaCX/Errors")
 
 class Identifier extends DataType {
     static name = "Identifier";
-
-    constructor(value){
-        super()
-        this.value = value
-    }
-
-    validate(){
-        return Identifier.validate(this.value)
-    }
-
     static #minLength = 3;
     static #maxLength = 100;
     static #reservedWords = ["matter", "edition", "slot", "model", "editor", "user", "cx"];
@@ -30,7 +22,7 @@ class Identifier extends DataType {
         return random;
     }
 
-    static validate(value){
+    static test(value){
         const errors = [];
 
         if(typeof value === "number"){
@@ -42,20 +34,20 @@ class Identifier extends DataType {
             value = value.toLowerCase();
 
         } else {
-            errors.push("TYPE_MISMATCH")
+            errors.push(ErrorType.code)
         
         }
         
         if(value.length < this.#minLength){
-            errors.push("TOO_SHORT")
+            errors.push(ErrorTooShort.code)
         }
         
         if(value.length > this.#maxLength){
-            errors.push("TOO_LONG")
+            errors.push(ErrorTooLong.code)
         }
 
         if(!this.#syntax.test(value)){
-            errors.push("SYNTAX_ERROR")
+            errors.push(ErrorSyntax.code)
         }
 
         if(this.#reservedWords.indexOf(value) > -1){
@@ -70,6 +62,15 @@ class Identifier extends DataType {
             errors,
             sanitised
         };
+    }
+
+    constructor(value){
+        super()
+        this.value = value
+    }
+
+    test(){
+        return Identifier.test(this.value)
     }
 }
 
