@@ -12,6 +12,7 @@ const {Squid} = require("../Squid");
 const {NameSpace} = require("../NameSpace");
 const {PhoneNumber} = require("../PhoneNumber");
 const {Flag} = require("../Flag");
+const {Safe} = require("../Safe");
 
 const DataTypes = {
     Identifier,
@@ -25,7 +26,8 @@ const DataTypes = {
     Squid,
     NameSpace,
     PhoneNumber,
-    Flag
+    Flag,
+    Safe
 }
 
 class Schema {

@@ -1,4 +1,4 @@
-const {ShortText, LongText, Email, Flag, Identifier, Password, PhoneNumber, Squid, Stamp, Url} = require("../index.js");
+const {Safe, ShortText, LongText, Email, Flag, Identifier, Password, PhoneNumber, Squid, Stamp, Url} = require("../index.js");
 
 
 
@@ -85,6 +85,12 @@ const dataTypeTests = () => {
 
     console.log(Url.test("https://vanilla.cx"))
     console.groupEnd()
+
+    const user_test = "thssdsis-shouldbe.valid";
+    console.log(Safe.test(user_test, ["ssds"]))
+    console.log(Safe.test("sCrIpT"))    
 }
 
 dataTypeTests()
+
+
